@@ -1,155 +1,225 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import Navbar from "../components/navrbar";
-import { useNavigate } from "react-router-dom";
 import Footer from "../components/footer";
+import { FaStar, FaTrophy } from "react-icons/fa";
 import { books } from "../data/books";
 
-function Home() {
-  const navigate = useNavigate();
-  const [flash, setFlash] = useState(null);
+function BookSlider() {
+  // New Books = anything not completed, all from central dataset
+  const newBooks = books.filter(
+    (b) => (b.status || "").toLowerCase() !== "completed"
+  );
+
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const timerRef = useRef(null);
+  const len = newBooks.length;
+
   useEffect(() => {
-    try {
-      const msg = sessionStorage.getItem('flash');
-      if (msg) {
-        setFlash(msg);
-        sessionStorage.removeItem('flash');
-        const t = setTimeout(() => setFlash(null), 2000);
-        return () => clearTimeout(t);
-      }
-    } catch {}
-  }, []);
-  const stats = useMemo(() => {
-    const total = books.length;
-    const newBooks = books.filter(
-      b => (b.status || "").toLowerCase() !== "completed"
-    ).length;
-    return { total, newBooks };
-  }, []);
+    if (paused || !len) return;
+    timerRef.current = setInterval(() => {
+      setIndex((i) => (i + 1) % len);
+    }, 2000);
+    return () => clearInterval(timerRef.current);
+  }, [paused, len]);
+
+  if (!len) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex flex-col">
-      {flash && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded border text-sm shadow bg-emerald-900/30 border-emerald-400/60 text-emerald-200">
-          {flash}
-        </div>
-      )}
-      <Navbar />
+    <section
+      className="w-full flex justify-center mt-8 px-4"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className="relative w-full max-w-5xl">
+        {newBooks.map((b, i) => {
+          const active = i === index;
+          return (
+            <article
+              key={b.title + i}
+              className={`absolute inset-0 transition-opacity duration-500 ${
+                active ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+              }`}
+            >
+              <div className="rounded-xl border border-gray-700/60 bg-gradient-to-br from-gray-800/70 via-gray-900/70 to-gray-900/90 shadow-[0_0_40px_-10px_rgba(0,0,0,0.7)] p-6 md:p-8 backdrop-blur">
+                <div className="flex gap-6 md:gap-10 items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <div className="inline-flex items-center justify-center w-10 h-10 bg-yellow-400/90 text-black font-bold rounded-lg shadow">
+                        {b.rating ?? "-"}
+                      </div>
+                      {(() => {
+                        const to = b._id ? `/books/${b._id}` : `/books/${encodeURIComponent(b.title)}`;
+                        return (
+                          <h2 className="text-2xl md:text-3xl font-semibold text-white truncate">
+                            <Link to={to} className="hover:underline">
+                              {b.title}
+                            </Link>
+                          </h2>
+                        );
+                      })()}
+                    </div>
+                    {b.type && (
+                      <div className="mt-2 text-yellow-400 text-sm font-semibold tracking-wide">
+                        {b.type}
+                      </div>
+                    )}
+                    {b.genres?.length ? (
+                      <div className="mt-3 text-gray-300">{b.genres.join(", ")}</div>
+                    ) : null}
+                    {b.summary && (
+                      <div className="mt-5">
+                        <h3 className="text-sm text-gray-200 font-bold mb-1">SUMMARY</h3>
+                        <p className="text-gray-300 max-h-20 overflow-hidden">{b.summary}</p>
+                      </div>
+                    )}
+                    <div className="mt-4 text-gray-200">
+                      <div>Status: <span className="text-gray-300">{b.status ?? "N/A"}</span></div>
+                      {b.author && (
+                        <div>Author: <span className="text-gray-300">{b.author}</span></div>
+                      )}
+                    </div>
+                  </div>
+                  {b.cover && (() => {
+                    const to = b._id ? `/books/${b._id}` : `/books/${encodeURIComponent(b.title)}`;
+                    return (
+                      <Link to={to} className="shrink-0">
+                        <img
+                          src={b.cover}
+                          alt={b.title}
+                          className="w-36 h-52 md:w-44 md:h-64 object-cover object-top rounded-md shadow-md border border-gray-700 cursor-pointer"
+                        />
+                      </Link>
+                    );
+                  })()}
+                </div>
+              </div>
+            </article>
+          );
+        })}
 
-      
-      <section className="px-4 mt-16">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-white">
-            Explore our Library Management System
-          </h1>
-          <p className="text-gray-300 mt-4">
-            There are various books you can explore in our library management
-            system. Browse, search, and track your favorites with ease.
-          </p>
-          <div className="mt-8 flex items-center justify-center gap-3">
+        {/* reserve height */}
+        <div className="invisible">
+          <div className="rounded-xl p-8">
+            <div className="flex gap-10">
+              <div className="flex-1">
+                <div className="h-6" />
+                <div className="h-5" />
+                <div className="h-20" />
+              </div>
+              <div className="w-44 h-64" />
+            </div>
+          </div>
+        </div>
+
+        {/* dots */}
+        <div className="absolute -bottom-6 left-0 right-0 flex justify-center gap-2">
+          {newBooks.map((_, i) => (
             <button
-              onClick={() => navigate('/featured', { replace: true })}
-              className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-500"
-              type="button"
-            >
-              Browse Library
-            </button>
-            <a
-              href="#features"
-              className="px-6 py-3 rounded-lg border border-gray-600 text-gray-200 hover:bg-gray-800"
-            >
-              See Features
-            </a>
-          </div>
+              key={i}
+              onClick={() => setIndex(i)}
+              className={`h-2.5 w-2.5 rounded-full transition-all ${
+                i === index ? "bg-yellow-400 w-4" : "bg-gray-500"
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      
-      <section className="px-4 mt-12">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-6 text-center shadow">
-            <div className="text-4xl font-bold text-white">
-              {stats.newBooks}
-            </div>
-            <div className="text-gray-400 mt-1">New Books</div>
-          </div>
-          <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-6 text-center shadow">
-            <div className="text-4xl font-bold text-white">{stats.total}</div>
-            <div className="text-gray-400 mt-1">Total Books</div>
-          </div>
+// Recommends derived ONLY from central books dataset.
+// If you add b.recommended = true in data/books.js it will use that;
+// otherwise it falls back to top 12 by rating (desc), then title.
+function RecommendGrid() {
+  const recommends = useMemo(() => {
+    const src = books.slice();
+
+    const flagged = src.filter((b) => b.recommended === true);
+    const base = (flagged.length ? flagged : src)
+      .filter((b) => b.title) // keep valid entries
+      .sort((a, b) => {
+        const ra = typeof a.rating === "number" ? a.rating : -1;
+        const rb = typeof b.rating === "number" ? b.rating : -1;
+        if (rb !== ra) return rb - ra; // higher rating first
+        return a.title.localeCompare(b.title);
+      })
+      .slice(0, 12);
+
+    return base.map((b, i) => ({ ...b, rank: i + 1 }));
+  }, []);
+
+  if (!recommends.length) return null;
+
+  return (
+    <section className="px-4 mt-16">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-3xl font-bold text-white mb-6">Recommends</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+          {recommends.map((r) => {
+            const score =
+              typeof r.rating === "number" ? (r.rating / 2).toFixed(1) : "—";
+            const to = r._id ? `/books/${r._id}` : `/books/${encodeURIComponent(r.title)}`;
+            return (
+              <Link
+                to={to}
+                key={r.title}
+                className="group overflow-hidden rounded-2xl border border-gray-700/70 bg-gray-900/40 hover:border-gray-500 transition-colors shadow"
+              >
+                <div className="relative h-56 bg-gray-800">
+                  {r.cover ? (
+                    <img
+                      src={r.cover}
+                      alt={r.title}
+                      className="h-full w-full object-cover object-top"
+                      loading="lazy"
+                    />
+                  ) : null}
+                  <div className="absolute top-2 right-2 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-xs text-white">
+                    <FaStar className="text-yellow-400" />
+                    <span>{score}</span>
+                  </div>
+                </div>
+                <div className="p-3">
+                  <h3 className="text-gray-100 font-semibold text-sm leading-snug h-10 overflow-hidden hover:underline">
+                    {r.title}
+                  </h3>
+                  <div className="mt-1 text-xs text-gray-400 flex items-center gap-1">
+                    <FaTrophy className="text-gray-500" />
+                    <span>RANK {r.rank}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-  
-      <section id="features" className="px-4 mt-16">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-center">
-            Everything you need to read your books.
-          </h2>
-          <p className="text-gray-400 text-center mt-2">
-            Well, everything you need if you aren’t that picky about minor
-            details.
-          </p>
-
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-6 shadow">
-              <h3 className="text-white font-semibold text-lg">
-                Mark your favorite books
-              </h3>
-              <p className="text-gray-300 mt-2">
-                Save and quickly access your favorite titles or series.
-              </p>
-            </div>
-            <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-6 shadow">
-              <h3 className="text-white font-semibold text-lg">Filter & genres</h3>
-              <p className="text-gray-300 mt-2">
-                Find titles by genre, status, author, and more.
-              </p>
-            </div>
-            <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-6 shadow">
-              <h3 className="text-white font-semibold text-lg">Advanced search</h3>
-              <p className="text-gray-300 mt-2">
-                Search by title, tags, or metadata quickly.
-              </p>
-            </div>
-            <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-6 shadow">
-              <h3 className="text-white font-semibold text-lg">Reading progress</h3>
-              <p className="text-gray-300 mt-2">Pick up right where you stopped.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-     
-      <section className="px-4 mt-20 mb-16">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-white">
-            Join our community on Discord and Reddit
-          </h2>
-          <p className="text-gray-300 mt-2">
-            Ask questions, share suggestions, and find the best books to read.
-          </p>
-
-          <div className="mt-4 flex items-center justify-center gap-6 text-blue-300">
-            <a href="#" className="hover:text-blue-200">
-              Discord
-            </a>
-            <span className="text-gray-500">•</span>
-            <a href="#" className="hover:text-blue-200">
-              Reddit
-            </a>
-          </div>
-
-          <img
-            src="/community-screenshot.png"
-            alt="Community preview"
-            className="mt-8 mx-auto max-w-2xl w-full rounded-lg border border-gray-700 shadow"
-          />
-        </div>
-      </section>
-
+export default function Home() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex flex-col">
+      <Navbar />
+      <header className="px-4 mt-10 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold text-white">New Books</h1>
+        <p className="text-gray-300 mt-2">A rotating spotlight of newly added/ongoing titles.</p>
+      </header>
+      <BookSlider />
+      <RecommendGrid />
+      <div className="px-4 mt-10 mb-16 text-center">
+        <a
+          href="/books"
+          className="inline-block px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-500"
+        >
+          Open Full Library
+        </a>
+      </div>
       <Footer />
     </div>
   );
 }
-
-export default Home;

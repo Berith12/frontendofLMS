@@ -2,13 +2,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider } from './context/AuthContext';
-import Home from './pages/home';
 import LandingGate from './pages/LandingGate';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Blog from './pages/Blog';
 import Books from './pages/books';
-import Featured from "./pages/featured";
+import Home from "./pages/home";
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
@@ -31,7 +30,7 @@ function App() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/books" element={<Books />} />
           <Route path="/books/:id" element={<BookDetails />} />
-          <Route path="/featured" element={<Featured />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />

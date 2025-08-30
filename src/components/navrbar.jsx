@@ -63,12 +63,12 @@ function Navbar({ logoutOnly = false }) {
   return (
     <nav className="w-full bg-gradient-to-b from-black via-gray-900 to-transparent px-8 py-4 flex items-center justify-between">
       {/* Logo */}
-      <a href="/featured" aria-label="Go to Featured" className="flex items-center gap-2 group">
+  <a href="/home" aria-label="Go to Home" className="flex items-center gap-2 group">
         <span className="text-3xl font-bold italic text-white group-hover:text-blue-300 transition-colors">Library Management System</span>
       </a>
       {/* Center Nav */}
   <ul className="flex gap-10 items-center">
-        <li><a href="/" className="text-gray-200 font-semibold hover:text-white">Home</a></li>
+        <li><a href="/home" className="text-gray-200 font-semibold hover:text-white">Home</a></li>
         <li><a href="/books" className="text-gray-200 font-semibold hover:text-white">Books</a></li>
         <li className="relative">
           <button
@@ -109,7 +109,7 @@ function Navbar({ logoutOnly = false }) {
           )}
         </li>
         <li><a href="/contact" className="text-gray-200 font-semibold hover:text-white">Contact</a></li>
-        {(user?.role === 'Admin' || user?.role === 'Librarian') && (
+        {user?.role === 'Librarian' && (
           <li><a href="/admin" className="text-gray-200 font-semibold hover:text-white">Manage Books</a></li>
         )}
         {/* Search (desktop) */}

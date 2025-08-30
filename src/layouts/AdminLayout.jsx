@@ -14,7 +14,7 @@ export default function AdminLayout({ children, active, logoutOnlyNav = false })
     <div className="min-h-screen flex">
   <aside className="w-64 bg-gradient-to-b from-black via-gray-900 to-black text-white flex flex-col p-4 border-r border-gray-800">
         <div className="px-2 mb-4">
-          <a href="/featured" className="block text-white font-semibold text-lg tracking-wide hover:text-blue-300 transition-colors">
+          <a href="/home" className="block text-white font-semibold text-lg tracking-wide hover:text-blue-300 transition-colors">
             Library Management System
           </a>
         </div>

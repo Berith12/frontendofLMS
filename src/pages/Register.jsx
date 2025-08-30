@@ -38,7 +38,7 @@ export default function Register() {
       {/* Top nav with centered logo */}
       <header className="w-full border-b border-gray-800/70 py-4">
         <div className="max-w-7xl mx-auto px-4 flex justify-center">
-          <a href="/featured" aria-label="Go to Featured" className="text-2xl md:text-3xl font-bold italic text-white hover:text-blue-300 transition-colors">
+          <a href="/home" aria-label="Go to Home" className="text-2xl md:text-3xl font-bold italic text-white hover:text-blue-300 transition-colors">
             Library Management System
           </a>
         </div>
